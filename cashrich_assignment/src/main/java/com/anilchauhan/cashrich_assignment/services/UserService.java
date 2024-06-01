@@ -6,6 +6,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.anilchauhan.cashrich_assignment.entities.User;
+import com.anilchauhan.cashrich_assignment.exceptions.DuplicateEmailException;
+import com.anilchauhan.cashrich_assignment.exceptions.UserNotFoundException;
+import com.anilchauhan.cashrich_assignment.exceptions.UsereameNotFoundException;
 import com.anilchauhan.cashrich_assignment.repositories.UserRepository;
 
 import java.util.Optional;
@@ -22,12 +25,12 @@ public class UserService {
     public User registerUser(User user) throws Exception {
         Optional<User> existingUser = userRepository.findByEmail(user.getEmail());
         if (existingUser.isPresent()) {
-            throw new Exception("Email already exists");
+            throw new DuplicateEmailException("Email already exists");
         }
 
         existingUser = userRepository.findByUsername(user.getUsername());
-        if (existingUser.isPresent()) {
-            throw new Exception("Username already exists");
+        if (!existingUser.isPresent()) {
+            throw new UsereameNotFoundException("Username does not exists");
         }
 
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
@@ -37,7 +40,7 @@ public class UserService {
     public User updateUser(Long userId, User updatedUser) throws Exception {
         Optional<User> existingUser = userRepository.findById(userId);
         if (!existingUser.isPresent()) {
-            throw new Exception("User not found");
+            throw new UserNotFoundException ("User not found");
         }
 
         User user = existingUser.get();
